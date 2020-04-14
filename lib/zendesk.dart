@@ -7,7 +7,8 @@ class Zendesk {
   static const MethodChannel _channel =
       const MethodChannel('com.codeheadlabs.zendesk');
 
-  Future<void> init(String accountKey, {String department, String appName}) async {
+  Future<void> init(String accountKey,
+      {String department, String appName}) async {
     await _channel.invokeMethod('init', <String, String>{
       'accountKey': accountKey,
       'department': department,
@@ -25,6 +26,12 @@ class Zendesk {
     });
   }
 
+  Future<void> setToken(String token) async {
+    await _channel.invokeMethod('setToken', <String, String>{
+      'firebase_token': token,
+    });
+  }
+
   Future<void> startChat({
     Color iosNavigationBarColor,
     Color iosNavigationTitleColor,
@@ -33,6 +40,14 @@ class Zendesk {
       'iosNavigationBarColor': iosNavigationBarColor?.value,
       'iosNavigationTitleColor': iosNavigationTitleColor?.value,
     });
+  }
+
+  Future<bool> checkSystemAlertPermission() async {
+    return _channel.invokeMethod<bool>('checkSystemAlertPermission');
+  }
+
+  Future<String> openSystemAlert() async {
+    return _channel.invokeMethod<String>('openSystemAlert');
   }
 
   Future<String> version() async {
