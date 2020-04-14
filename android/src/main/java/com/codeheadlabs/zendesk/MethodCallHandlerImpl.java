@@ -143,7 +143,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
 
       }
     }
-    result.success(true);
+    result.success("");
   }
 
   private void checkSystemAlertPermission(Result result) {

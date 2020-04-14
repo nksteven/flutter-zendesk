@@ -25,11 +25,14 @@ class _MyAppState extends State<MyApp> {
 
   // Zendesk is asynchronous, so we initialize in an async method.
   Future<void> initZendesk() async {
-    zendesk.init(ZendeskAccountKey, department: 'Department Name', appName: 'My Example App').then((r) {
-	  print('init finished');
-	}).catchError((e) {
-	  print('failed with error $e');
-	});
+    zendesk
+        .init(ZendeskAccountKey,
+            department: 'Department Name', appName: 'My Example App')
+        .then((r) {
+      print('init finished');
+    }).catchError((e) {
+      print('failed with error $e');
+    });
 
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
@@ -108,6 +111,12 @@ class _MyAppState extends State<MyApp> {
                   }).catchError((e) {
                     print('error $e');
                   });
+                },
+              ),
+              RaisedButton(
+                child: Text('open settings'),
+                onPressed: () async {
+                  zendesk.openSystemAlert();
                 },
               ),
             ],
