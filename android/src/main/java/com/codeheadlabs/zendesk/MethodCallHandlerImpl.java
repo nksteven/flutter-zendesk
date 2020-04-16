@@ -13,6 +13,7 @@ import com.zopim.android.sdk.api.ZopimChatApi;
 import com.zopim.android.sdk.model.VisitorInfo;
 import com.zopim.android.sdk.prechat.ZopimChatActivity;
 import com.zopim.android.sdk.util.AppInfo;
+import com.zopim.android.sdk.widget.ChatWidgetService;
 
 import androidx.annotation.RequiresApi;
 import io.flutter.Log;
@@ -49,8 +50,13 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
         break;
       case "openSystemAlert":
         openSystemAlert(result);
+        break;
       case "checkSystemAlertPermission":
         checkSystemAlertPermission(result);
+        break;
+      case "closeChatWidget":
+        closeChatWidget(result);
+        break;
       default:
         try{
           result.notImplemented();
@@ -60,6 +66,12 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
         }
         break;
     }
+  }
+
+  private void closeChatWidget(Result result) {
+    Log.d("closeChatWidget","closeChatWidget");
+    ChatWidgetService.stopService(activity);
+    result.success("");
   }
 
 
@@ -124,9 +136,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
   }
 
   private void handleVersion(Result result) {
-
     result.success(AppInfo.getChatSdkVersionName());
-
   }
 
   private void openSystemAlert(Result result){

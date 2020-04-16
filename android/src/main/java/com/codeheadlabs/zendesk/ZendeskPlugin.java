@@ -27,7 +27,6 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware  {
 
   public ZendeskPlugin(Activity activity) {
     this.activity=activity;
-    initApplicationLifeCallback();
   }
 
   public static void registerWith(Registrar registrar) {
@@ -72,44 +71,5 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware  {
     methodCallHandler.setActivity(null);
   }
 
-  public void initApplicationLifeCallback(){
-    activity.getApplication().registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-      @Override
-      public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
-      }
-
-      @Override
-      public void onActivityStarted(Activity activity) {
-
-      }
-
-      @Override
-      public void onActivityResumed(Activity activity) {
-
-      }
-
-      @Override
-      public void onActivityPaused(Activity activity) {
-
-      }
-
-      @Override
-      public void onActivityStopped(Activity activity) {
-
-      }
-
-      @Override
-      public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-
-      }
-
-      @Override
-      public void onActivityDestroyed(Activity activity) {
-        Log.d("zendesk","onActivityDestroyed");
-        ChatWidgetService.disable();
-      }
-    });
-  }
 
 }
