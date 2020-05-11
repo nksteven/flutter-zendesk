@@ -15,7 +15,7 @@ Flutter interface for Zendesk Mobile SDK
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'ZDCChat'
+  s.dependency 'ZendeskChatSDK'
   s.static_framework = true
   
   s.ios.deployment_target = '9.3'
