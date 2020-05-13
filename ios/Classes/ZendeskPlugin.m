@@ -3,6 +3,10 @@
 #import <ChatSDK/ChatSDK.h>
 #import <ChatProvidersSDK/ChatProvidersSDK.h>
 #import <MessagingSDK/MessagingSDK.h>
+#import <MessagingAPI/MessagingAPI.h>
+#import <SDKConfigurations/SDKConfigurations.h>
+#import <ZendeskCoreSDK/ZendeskCoreSDK.h>
+#import <SupportSDK/SupportSDK.h>
 
 #define ARGB_COLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 green:((c>>8)&0xFF)/255.0 blue:((c)&0xFF)/255.0  alpha:((c>>24)&0xFF)/255.0]
 
@@ -18,7 +22,24 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"init" isEqualToString:call.method]) {
+//      [ZDKZendesk initializeWithAppId: @"9ef132584500492128df9055a758558b2d3358d0fd306d5c"
+//                             clientId: @"mobile_sdk_client_f7f11d774c4853ec413b"
+//                           zendeskUrl: @"https://ntfoods.zendesk.com"];
+//
+//      id<ZDKObjCIdentity> userIdentity = [[ZDKObjCAnonymous alloc] initWithName:@"Bob Young"
+//              email:@"BobYoung@ntfoods.com"];
+//      [[ZDKZendesk instance] setIdentity:userIdentity];
+//
+//      [ZDKSupport initializeWithZendesk: [ZDKZendesk instance]];
+      
+      
       [ZDKChat initializeWithAccountKey:call.arguments[@"accountKey"] queue:dispatch_get_main_queue()];
+      [ZDKChat.connectionProvider connect];
+//      [ZDKChat.chatProvider sendMessage:@"Hi, by shaoli" completion:^(NSString *messageId, NSError *error){
+//          if (messageId) {
+//              
+//          }
+//      }];
     result(@(true));
   } else if ([@"setVisitorInfo" isEqualToString:call.method]) {
       NSString *email = call.arguments[@"email"];
@@ -27,7 +48,7 @@
       NSString *note = call.arguments[@"note"];
 
       ZDKChatAPIConfiguration *chatAPIConfiguration = [[ZDKChatAPIConfiguration alloc] init];
-      chatAPIConfiguration.department = @"Department Name";
+      chatAPIConfiguration.department = @"";
       if ([phoneNumber isKindOfClass:[NSNull class]]) {
           phoneNumber = @"";
       }
@@ -43,26 +64,61 @@
                                                                   phoneNumber:phoneNumber];
       ZDKChat.instance.configuration = chatAPIConfiguration;
       
+      
+      
       result(@(true));
   } else if ([@"startChat" isEqualToString:call.method]) {
+      NSNumber *navigationBarColor = call.arguments[@"iosNavigationBarColor"];
+      NSNumber *navigationTitleColor = call.arguments[@"iosNavigationTitleColor"];
+      
+      
+      
       UINavigationController *navVc = [[UINavigationController alloc] init];
-
+      navVc.navigationBar.translucent = NO;
+      navVc.navigationBar.barTintColor = [UIColor lightGrayColor];//
+      navVc.navigationBar.titleTextAttributes = @{
+                                                           NSForegroundColorAttributeName: [UIColor whiteColor]
+                                                           };
       
       // Name for Bot messages
       ZDKMessagingConfiguration *messagingConfiguration = [[ZDKMessagingConfiguration alloc] init];
       messagingConfiguration.name = @"";
-
-      ZDKChatConfiguration *chatConfiguration = [[ZDKChatConfiguration alloc] init];
-      chatConfiguration.isPreChatFormEnabled = YES;
-
-      // Build view controller
       NSError *error = nil;
+      
+      
+      ZDKChatConfiguration *chatConfiguration = [[ZDKChatConfiguration alloc] init];
+      chatConfiguration.isPreChatFormEnabled = NO;
+      chatConfiguration.isAgentAvailabilityEnabled = YES;
+      chatConfiguration.chatMenuActions = @[@(ZDKChatMenuActionEmailTranscript), @(ZDKChatMenuActionEndChat)];
+      ZDKChatFormConfiguration *formConfiguration = [[ZDKChatFormConfiguration alloc] initWithName:ZDKFormFieldStatusRequired
+                                                                                             email:ZDKFormFieldStatusOptional
+                                                                                       phoneNumber:ZDKFormFieldStatusHidden
+                                                                                        department:ZDKFormFieldStatusRequired];
+      chatConfiguration.preChatFormConfiguration = formConfiguration;
+      // Build view controller
       ZDKChatEngine* chatEngine = [ZDKChatEngine engineAndReturnError: &error];
       UIViewController *viewController = [ZDKMessaging.instance buildUIWithEngines:@[chatEngine]
                                                                            configs:@[messagingConfiguration, chatConfiguration]
                                                                              error:&error];
       // Present view controller
       [navVc pushViewController:viewController animated:YES];
+      
+      
+      UIViewController *rootVc = [UIApplication sharedApplication].keyWindow.rootViewController ;
+      [rootVc presentViewController:navVc
+                           animated:true
+                         completion:^{
+                             UIBarButtonItem *back = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Back", comment: @"")
+                                                                                      style:UIBarButtonItemStylePlain
+                                                                                     target:self
+                                                                                     action:@selector(close:)];
+          [back setTitleTextAttributes:@{ NSForegroundColorAttributeName: [UIColor whiteColor]} forState:UIControlStateNormal];
+          
+          navVc.topViewController.navigationItem.leftBarButtonItem = back;
+                             
+                         }];
+      [ZDKCoreLogger setEnabled:YES];
+      [ZDKCoreLogger setLogLevel:ZDKLogLevelDebug];
 
     result(@(true));
   } else if ([@"version" isEqualToString:call.method]) {
