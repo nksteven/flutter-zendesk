@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class Zendesk {
@@ -33,12 +34,16 @@ class Zendesk {
   }
 
   Future<void> startChat({
-    Color iosNavigationBarColor,
-    Color iosNavigationTitleColor,
+    Color iosNavigationBarColor = const Color.fromRGBO(245, 245, 245, 255),
+    Color iosNavigationTitleColor = Colors.black,
+    Color iosNavigationBackButtonTitleColor =
+        const Color.fromRGBO(10, 93, 247, 255),
   }) async {
     await _channel.invokeMethod('startChat', {
       'iosNavigationBarColor': iosNavigationBarColor?.value,
       'iosNavigationTitleColor': iosNavigationTitleColor?.value,
+      'iosNavigationBackButtonTitleColor':
+          iosNavigationBackButtonTitleColor?.value,
     });
   }
 

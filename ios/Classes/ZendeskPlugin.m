@@ -22,24 +22,8 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"init" isEqualToString:call.method]) {
-//      [ZDKZendesk initializeWithAppId: @"9ef132584500492128df9055a758558b2d3358d0fd306d5c"
-//                             clientId: @"mobile_sdk_client_f7f11d774c4853ec413b"
-//                           zendeskUrl: @"https://ntfoods.zendesk.com"];
-//
-//      id<ZDKObjCIdentity> userIdentity = [[ZDKObjCAnonymous alloc] initWithName:@"Bob Young"
-//              email:@"BobYoung@ntfoods.com"];
-//      [[ZDKZendesk instance] setIdentity:userIdentity];
-//
-//      [ZDKSupport initializeWithZendesk: [ZDKZendesk instance]];
-      
-      
       [ZDKChat initializeWithAccountKey:call.arguments[@"accountKey"] queue:dispatch_get_main_queue()];
       [ZDKChat.connectionProvider connect];
-//      [ZDKChat.chatProvider sendMessage:@"Hi, by shaoli" completion:^(NSString *messageId, NSError *error){
-//          if (messageId) {
-//              
-//          }
-//      }];
     result(@(true));
   } else if ([@"setVisitorInfo" isEqualToString:call.method]) {
       NSString *email = call.arguments[@"email"];
@@ -55,7 +39,6 @@
       if ([email isKindOfClass:[NSNull class]]) {
           email = @"";
       }
-
       if ([name isKindOfClass:[NSNull class]]) {
           name = @"";
       }
@@ -63,29 +46,25 @@
                                                                         email:email
                                                                   phoneNumber:phoneNumber];
       ZDKChat.instance.configuration = chatAPIConfiguration;
-      
-      
-      
+
       result(@(true));
   } else if ([@"startChat" isEqualToString:call.method]) {
       NSNumber *navigationBarColor = call.arguments[@"iosNavigationBarColor"];
       NSNumber *navigationTitleColor = call.arguments[@"iosNavigationTitleColor"];
-      
-      
-      
+      NSNumber *iosNavigationBackButtonTitleColor = call.arguments[@"iosNavigationBackButtonTitleColor"];
+
       UINavigationController *navVc = [[UINavigationController alloc] init];
       navVc.navigationBar.translucent = NO;
-      navVc.navigationBar.barTintColor = [UIColor lightGrayColor];//
+      navVc.navigationBar.barTintColor = ARGB_COLOR([navigationBarColor integerValue]);
       navVc.navigationBar.titleTextAttributes = @{
-                                                           NSForegroundColorAttributeName: [UIColor whiteColor]
+                                                           NSForegroundColorAttributeName: ARGB_COLOR([navigationTitleColor integerValue])
                                                            };
       
       // Name for Bot messages
       ZDKMessagingConfiguration *messagingConfiguration = [[ZDKMessagingConfiguration alloc] init];
       messagingConfiguration.name = @"";
       NSError *error = nil;
-      
-      
+
       ZDKChatConfiguration *chatConfiguration = [[ZDKChatConfiguration alloc] init];
       chatConfiguration.isPreChatFormEnabled = NO;
       chatConfiguration.isAgentAvailabilityEnabled = YES;
@@ -102,21 +81,18 @@
                                                                              error:&error];
       // Present view controller
       [navVc pushViewController:viewController animated:YES];
-      
-      
+
       UIViewController *rootVc = [UIApplication sharedApplication].keyWindow.rootViewController ;
-      [rootVc presentViewController:navVc
+        [rootVc presentViewController:navVc
                            animated:true
                          completion:^{
                              UIBarButtonItem *back = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Back", comment: @"")
                                                                                       style:UIBarButtonItemStylePlain
                                                                                      target:self
                                                                                      action:@selector(close:)];
-          [back setTitleTextAttributes:@{ NSForegroundColorAttributeName: [UIColor whiteColor]} forState:UIControlStateNormal];
-          
-          navVc.topViewController.navigationItem.leftBarButtonItem = back;
-                             
-                         }];
+        [back setTitleTextAttributes:@{ NSForegroundColorAttributeName: ARGB_COLOR([iosNavigationBackButtonTitleColor integerValue])} forState:UIControlStateNormal];
+        navVc.topViewController.navigationItem.leftBarButtonItem = back;
+      }];
       [ZDKCoreLogger setEnabled:YES];
       [ZDKCoreLogger setLogLevel:ZDKLogLevelDebug];
 
