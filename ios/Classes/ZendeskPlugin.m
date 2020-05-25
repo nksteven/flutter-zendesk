@@ -22,24 +22,8 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"init" isEqualToString:call.method]) {
-//      [ZDKZendesk initializeWithAppId: @"9ef132584500492128df9055a758558b2d3358d0fd306d5c"
-//                             clientId: @"mobile_sdk_client_f7f11d774c4853ec413b"
-//                           zendeskUrl: @"https://ntfoods.zendesk.com"];
-//
-//      id<ZDKObjCIdentity> userIdentity = [[ZDKObjCAnonymous alloc] initWithName:@"Bob Young"
-//              email:@"BobYoung@ntfoods.com"];
-//      [[ZDKZendesk instance] setIdentity:userIdentity];
-//
-//      [ZDKSupport initializeWithZendesk: [ZDKZendesk instance]];
-      
-      
       [ZDKChat initializeWithAccountKey:call.arguments[@"accountKey"] queue:dispatch_get_main_queue()];
       [ZDKChat.connectionProvider connect];
-//      [ZDKChat.chatProvider sendMessage:@"Hi, by shaoli" completion:^(NSString *messageId, NSError *error){
-//          if (messageId) {
-//              
-//          }
-//      }];
     result(@(true));
   } else if ([@"setVisitorInfo" isEqualToString:call.method]) {
       NSString *email = call.arguments[@"email"];
@@ -65,7 +49,6 @@
       ZDKChat.instance.configuration = chatAPIConfiguration;
       
       
-      
       result(@(true));
   } else if ([@"startChat" isEqualToString:call.method]) {
       NSNumber *navigationBarColor = call.arguments[@"iosNavigationBarColor"];
@@ -75,9 +58,9 @@
       
       UINavigationController *navVc = [[UINavigationController alloc] init];
       navVc.navigationBar.translucent = NO;
-      navVc.navigationBar.barTintColor = [UIColor lightGrayColor];//
+      navVc.navigationBar.barTintColor = ARGB_COLOR([navigationBarColor integerValue]);//
       navVc.navigationBar.titleTextAttributes = @{
-                                                           NSForegroundColorAttributeName: [UIColor whiteColor]
+                                                           NSForegroundColorAttributeName: ARGB_COLOR([navigationTitleColor integerValue])
                                                            };
       
       // Name for Bot messages
@@ -112,7 +95,7 @@
                                                                                       style:UIBarButtonItemStylePlain
                                                                                      target:self
                                                                                      action:@selector(close:)];
-          [back setTitleTextAttributes:@{ NSForegroundColorAttributeName: [UIColor whiteColor]} forState:UIControlStateNormal];
+          [back setTitleTextAttributes:@{ NSForegroundColorAttributeName: ARGB_COLOR([navigationTitleColor integerValue])} forState:UIControlStateNormal];
           
           navVc.topViewController.navigationItem.leftBarButtonItem = back;
                              
