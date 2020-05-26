@@ -53,12 +53,11 @@
   } else if ([@"startChat" isEqualToString:call.method]) {
       NSNumber *navigationBarColor = call.arguments[@"iosNavigationBarColor"];
       NSNumber *navigationTitleColor = call.arguments[@"iosNavigationTitleColor"];
-      
-      
+      NSString *defaultInputFieldValue = call.arguments[@"defaultInputFieldValue"];
       
       UINavigationController *navVc = [[UINavigationController alloc] init];
       navVc.navigationBar.translucent = NO;
-      navVc.navigationBar.barTintColor = ARGB_COLOR([navigationBarColor integerValue]);//
+      navVc.navigationBar.barTintColor = ARGB_COLOR([navigationBarColor integerValue]);
       navVc.navigationBar.titleTextAttributes = @{
                                                            NSForegroundColorAttributeName: ARGB_COLOR([navigationTitleColor integerValue])
                                                            };
@@ -67,7 +66,6 @@
       ZDKMessagingConfiguration *messagingConfiguration = [[ZDKMessagingConfiguration alloc] init];
       messagingConfiguration.name = @"";
       NSError *error = nil;
-      
       
       ZDKChatConfiguration *chatConfiguration = [[ZDKChatConfiguration alloc] init];
       chatConfiguration.isPreChatFormEnabled = NO;
@@ -85,20 +83,37 @@
                                                                              error:&error];
       // Present view controller
       [navVc pushViewController:viewController animated:YES];
-      
-      
+
+      if (defaultInputFieldValue != nil && ![defaultInputFieldValue isKindOfClass:[NSNull class]] && defaultInputFieldValue.length > 0) {
+          for (UIView *item in viewController.view.subviews) {
+              if([NSStringFromClass([item class]) isEqualToString:@"CommonUISDK.InputField"]) {
+                  for (UIView* subItem in item.subviews) {
+                      if ([subItem isKindOfClass:[UIView class]]) {
+                          for (UIView* view in subItem.subviews) {
+                              if ([view isKindOfClass:[UITextView class]]) {
+                                  ((UITextView*)view).text = defaultInputFieldValue;
+                                  for (UIView* subview in view.subviews) {
+                                      if ([subview isKindOfClass:[UILabel class]]) {
+                                          subview.hidden = true;
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+
+      UIBarButtonItem *back = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Back", comment: @"")
+                style:UIBarButtonItemStylePlain target:self action:@selector(close:)];
+      [back setTitleTextAttributes:@{ NSForegroundColorAttributeName: ARGB_COLOR([navigationTitleColor integerValue])} forState:UIControlStateNormal];
+      navVc.topViewController.navigationItem.leftBarButtonItem = back;
+
       UIViewController *rootVc = [UIApplication sharedApplication].keyWindow.rootViewController ;
       [rootVc presentViewController:navVc
                            animated:true
                          completion:^{
-                             UIBarButtonItem *back = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Back", comment: @"")
-                                                                                      style:UIBarButtonItemStylePlain
-                                                                                     target:self
-                                                                                     action:@selector(close:)];
-          [back setTitleTextAttributes:@{ NSForegroundColorAttributeName: ARGB_COLOR([navigationTitleColor integerValue])} forState:UIControlStateNormal];
-          
-          navVc.topViewController.navigationItem.leftBarButtonItem = back;
-                             
                          }];
       [ZDKCoreLogger setEnabled:YES];
       [ZDKCoreLogger setLogLevel:ZDKLogLevelDebug];

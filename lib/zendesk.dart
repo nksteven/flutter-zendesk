@@ -35,10 +35,12 @@ class Zendesk {
   Future<void> startChat({
     Color iosNavigationBarColor,
     Color iosNavigationTitleColor,
+    String defaultInputFieldValue = "",
   }) async {
     await _channel.invokeMethod('startChat', {
       'iosNavigationBarColor': iosNavigationBarColor?.value,
       'iosNavigationTitleColor': iosNavigationTitleColor?.value,
+      'defaultInputFieldValue': defaultInputFieldValue,
     });
   }
 
