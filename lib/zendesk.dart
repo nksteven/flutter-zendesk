@@ -3,9 +3,13 @@ import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
+typedef Future<dynamic> UnReadListener(int unRead);
+
 class Zendesk {
   static const MethodChannel _channel =
       const MethodChannel('com.codeheadlabs.zendesk');
+
+  UnReadListener _unReadListener;
 
   Future<void> init(String accountKey,
       {String department, String appName}) async {
@@ -56,5 +60,25 @@ class Zendesk {
 
   Future<String> version() async {
     return _channel.invokeMethod<String>('version');
+  }
+
+  void addUnreadListener(UnReadListener unReadListener) {
+    _unReadListener = unReadListener;
+    _channel.setMethodCallHandler(_handleMethod);
+  }
+
+  Future<dynamic> _handleMethod(MethodCall call) async {
+    switch (call.method) {
+      case "UnreadListener":
+        int unRead = call.arguments;
+        if (_unReadListener != null) {
+          _unReadListener(unRead);
+        }
+    }
+  }
+
+  Future<void> onReceiveMessage() async {
+    print("flutter:onReceiveMessage");
+    await _channel.invokeMethod('onReceivedChatMessage');
   }
 }

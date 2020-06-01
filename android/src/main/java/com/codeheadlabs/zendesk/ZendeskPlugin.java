@@ -5,6 +5,8 @@ import android.app.Application;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.zopim.android.sdk.api.ZopimChatApi;
+import com.zopim.android.sdk.prechat.ZopimChatActivity;
 import com.zopim.android.sdk.widget.ChatWidgetService;
 
 import androidx.annotation.NonNull;
@@ -19,14 +21,16 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 /**
  * ZendeskPlugin
  */
-public class ZendeskPlugin implements FlutterPlugin, ActivityAware  {
+public class ZendeskPlugin implements FlutterPlugin, ActivityAware , Application.ActivityLifecycleCallbacks {
 
   private MethodChannel channel;
   private MethodCallHandlerImpl methodCallHandler = new MethodCallHandlerImpl();
   private Activity activity;
+  public static boolean isFore=false;
 
   public ZendeskPlugin(Activity activity) {
     this.activity=activity;
+    activity.getApplication().registerActivityLifecycleCallbacks(this);
   }
 
   public static void registerWith(Registrar registrar) {
@@ -49,6 +53,7 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware  {
     channel = new MethodChannel(messenger, "com.codeheadlabs.zendesk");
     channel.setMethodCallHandler(methodCallHandler);
     methodCallHandler.setActivity(activity);
+    methodCallHandler.setMethodCall(channel);
   }
 
   @Override
@@ -72,4 +77,50 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware  {
   }
 
 
+  @Override
+  public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+
+  }
+
+  @Override
+  public void onActivityStarted(Activity activity) {
+    if(activity instanceof ZopimChatActivity){
+      isFore=true;
+    }
+    Log.d("onActivity","onActivityStarted,activity="+activity);
+  }
+
+  @Override
+  public void onActivityResumed(Activity activity) {
+    if(activity instanceof ZopimChatActivity){
+      isFore=true;
+    }
+    Log.d("onActivity","onActivityResumed,activity="+activity);
+  }
+
+  @Override
+  public void onActivityPaused(Activity activity) {
+    if(activity instanceof ZopimChatActivity){
+      isFore=false;
+      methodCallHandler.getInitCountMessage();
+    }
+  }
+
+  @Override
+  public void onActivityStopped(Activity activity) {
+    Log.d("onActivity","onActivityStopped,activity="+activity);
+    if(activity instanceof ZopimChatActivity){
+      isFore=false;
+    }
+  }
+
+  @Override
+  public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+    Log.d("onActivity","onActivitySaveInstanceState,activity="+activity);
+  }
+
+  @Override
+  public void onActivityDestroyed(Activity activity) {
+    Log.d("onActivity","onActivityDestroyed,activity="+activity);
+  }
 }
