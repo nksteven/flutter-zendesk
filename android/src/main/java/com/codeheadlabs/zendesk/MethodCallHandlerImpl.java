@@ -4,20 +4,34 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.zendesk.service.ZendeskCallback;
 import com.zopim.android.sdk.api.ZopimChat;
 import com.zopim.android.sdk.api.ZopimChatApi;
+import com.zopim.android.sdk.data.LivechatAgentsPath;
+import com.zopim.android.sdk.data.LivechatChatLogPath;
+import com.zopim.android.sdk.data.observers.ChatLogObserver;
+import com.zopim.android.sdk.model.ChatLog;
+import com.zopim.android.sdk.model.PushData;
 import com.zopim.android.sdk.model.VisitorInfo;
 import com.zopim.android.sdk.prechat.ZopimChatActivity;
 import com.zopim.android.sdk.util.AppInfo;
 import com.zopim.android.sdk.widget.ChatWidgetService;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import androidx.annotation.RequiresApi;
 import io.flutter.Log;
 import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
@@ -25,7 +39,19 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
 
   @Nullable
   private Activity activity;
+  int initCount= 0;
+  private MethodChannel methodCallHandler;
 
+  Handler mhandler=new Handler(){
+    @Override
+    public void dispatchMessage(Message msg) {
+      methodCallHandler.invokeMethod("UnreadListener",msg.what);
+    }
+  };
+
+  void setMethodCall(MethodChannel methodCallHandler){
+    this.methodCallHandler=methodCallHandler;
+  }
   void setActivity(@Nullable Activity activity) {
     this.activity = activity;
   }
@@ -68,6 +94,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
     }
   }
 
+
   private void closeChatWidget(Result result) {
     Log.d("closeChatWidget","closeChatWidget");
     ChatWidgetService.stopService(activity);
@@ -84,6 +111,11 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
       zopimConfig.visitorPathOne((String) call.argument("appName"));
     }
     result.success(true);
+  }
+
+  public void getInitCountMessage(){
+    initCount=LivechatChatLogPath.getInstance().countMessages(new ChatLog.Type[]{ChatLog.Type.CHAT_MSG_AGENT});
+    Log.d("onActivity","initCount=="+initCount);
   }
 
 
@@ -112,6 +144,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
       }
     }
     ZopimChat.setVisitorInfo(builder.build());
+
     result.success(true);
   }
 
@@ -126,7 +159,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
   }
 
   private void handleStartChat(MethodCall call, Result result) {
-    Log.d("handleStartChat","handleStartChat  activity="+(activity==null));
+    ZopimChatApi.getDataSource().addChatLogObserver(mChannelLogObserver);
     if (activity != null) {
       Intent intent = new Intent(activity, ZopimChatActivity.class);
       activity.startActivity(intent);
@@ -180,5 +213,18 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
       }
     }
   }
+
+  ChatLogObserver mChannelLogObserver = new ChatLogObserver() {
+    public void update(LinkedHashMap<String, ChatLog> chatLog) {
+      if(!ZendeskPlugin.isFore){
+        int currentCount = LivechatChatLogPath.getInstance().countMessages(new ChatLog.Type[]{ChatLog.Type.CHAT_MSG_AGENT});
+        if(initCount==0){
+          initCount=LivechatChatLogPath.getInstance().countMessages(new ChatLog.Type[]{ChatLog.Type.CHAT_MSG_AGENT});
+        }
+        final int unread = currentCount-initCount;
+        mhandler.sendEmptyMessage(unread);
+      }
+    }
+  };
 
 }
