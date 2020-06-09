@@ -106,6 +106,9 @@
     result(@(true));
   } else if ([@"version" isEqualToString:call.method]) {
       result(@"SDK V2");
+  } else if ([@"endChat" isEqualToString:call.method]) {
+      [ZDKChat.chatProvider endChat:^(BOOL _, NSError* __){}];
+      result(@(true));
   } else {
     result(FlutterMethodNotImplemented);
   }
