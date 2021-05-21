@@ -7,7 +7,7 @@ typedef Future<dynamic> UnReadListener(int unRead);
 
 class Zendesk {
   static const MethodChannel _channel =
-  const MethodChannel('com.codeheadlabs.zendesk');
+      const MethodChannel('com.codeheadlabs.zendesk');
 
   UnReadListener _unReadListener;
 
@@ -83,8 +83,8 @@ class Zendesk {
 
   Future<void> onReceiveMessage(String data) async {
     print("flutter:onReceiveMessage");
-    await _channel.invokeMethod('onReceivedChatMessage',{
-      "data":data,
+    await _channel.invokeMethod('onReceivedChatMessage', {
+      "data": data,
     });
   }
 }

@@ -1,6 +1,6 @@
 name: zendesk
 description: Flutter interface for Zendesk Mobile SDK
-version: 1.0.5
+version: 1.0.6
 author: Jon Keating <jon@licq.org>
 homepage: https://github.com/emostar/flutter-zendesk
 
