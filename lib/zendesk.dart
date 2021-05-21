@@ -46,6 +46,10 @@ class Zendesk {
     });
   }
 
+  Future<void> endChat() async {
+    await _channel.invokeMethod('endChat');
+  }
+
   Future<bool> checkSystemAlertPermission() async {
     return _channel.invokeMethod<bool>('checkSystemAlertPermission');
   }
