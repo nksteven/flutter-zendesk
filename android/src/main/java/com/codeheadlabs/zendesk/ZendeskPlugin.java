@@ -1,7 +1,8 @@
-package com.codeheadlabs.zendesk;
+package android.src.main.java.com.codeheadlabs.zendesk;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -28,13 +29,11 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware , Application
   private Activity activity;
   public static boolean isFore=false;
 
-  public ZendeskPlugin(Activity activity) {
-    this.activity=activity;
-    activity.getApplication().registerActivityLifecycleCallbacks(this);
+  public ZendeskPlugin() {
   }
 
   public static void registerWith(Registrar registrar) {
-    ZendeskPlugin plugin = new ZendeskPlugin(registrar.activity());
+    ZendeskPlugin plugin = new ZendeskPlugin();
     plugin.startListening(registrar.messenger());
   }
 
@@ -52,12 +51,12 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware , Application
   private void startListening(BinaryMessenger messenger) {
     channel = new MethodChannel(messenger, "com.codeheadlabs.zendesk");
     channel.setMethodCallHandler(methodCallHandler);
-    methodCallHandler.setActivity(activity);
     methodCallHandler.setMethodCall(channel);
   }
 
   @Override
   public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+    activity=binding.getActivity();
     methodCallHandler.setActivity(binding.getActivity());
   }
 
@@ -79,7 +78,6 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware , Application
 
   @Override
   public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
   }
 
   @Override
@@ -87,7 +85,6 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware , Application
     if(activity instanceof ZopimChatActivity){
       isFore=true;
     }
-    Log.d("onActivity","onActivityStarted,activity="+activity);
   }
 
   @Override
@@ -95,7 +92,6 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware , Application
     if(activity instanceof ZopimChatActivity){
       isFore=true;
     }
-    Log.d("onActivity","onActivityResumed,activity="+activity);
   }
 
   @Override
@@ -108,7 +104,6 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware , Application
 
   @Override
   public void onActivityStopped(Activity activity) {
-    Log.d("onActivity","onActivityStopped,activity="+activity);
     if(activity instanceof ZopimChatActivity){
       isFore=false;
     }
@@ -116,11 +111,9 @@ public class ZendeskPlugin implements FlutterPlugin, ActivityAware , Application
 
   @Override
   public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-    Log.d("onActivity","onActivitySaveInstanceState,activity="+activity);
   }
 
   @Override
   public void onActivityDestroyed(Activity activity) {
-    Log.d("onActivity","onActivityDestroyed,activity="+activity);
   }
 }

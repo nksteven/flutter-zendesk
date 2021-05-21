@@ -1,4 +1,4 @@
-package com.codeheadlabs.zendesk;
+package android.src.main.java.com.codeheadlabs.zendesk;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -11,16 +11,22 @@ import android.provider.Settings;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.zendesk.logger.Logger;
 import com.zendesk.service.ZendeskCallback;
+import com.zopim.android.sdk.api.ChatApi;
 import com.zopim.android.sdk.api.ZopimChat;
 import com.zopim.android.sdk.api.ZopimChatApi;
 import com.zopim.android.sdk.data.LivechatAgentsPath;
 import com.zopim.android.sdk.data.LivechatChatLogPath;
 import com.zopim.android.sdk.data.observers.ChatLogObserver;
+import com.zopim.android.sdk.data.observers.ConnectionObserver;
 import com.zopim.android.sdk.model.ChatLog;
+import com.zopim.android.sdk.model.Connection;
 import com.zopim.android.sdk.model.PushData;
 import com.zopim.android.sdk.model.VisitorInfo;
+import com.zopim.android.sdk.prechat.PreChatForm;
 import com.zopim.android.sdk.prechat.ZopimChatActivity;
+import com.zopim.android.sdk.prechat.ZopimChatFragment;
 import com.zopim.android.sdk.util.AppInfo;
 import com.zopim.android.sdk.widget.ChatWidgetService;
 
@@ -41,6 +47,8 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
   private Activity activity;
   int initCount= 0;
   private MethodChannel methodCallHandler;
+
+
 
   Handler mhandler=new Handler(){
     @Override
@@ -83,6 +91,9 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
       case "closeChatWidget":
         closeChatWidget(result);
         break;
+      case "onReceivedChatMessage":
+        onReceiveMessage(call,result);
+        break;
       default:
         try{
           result.notImplemented();
@@ -94,15 +105,33 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
     }
   }
 
+  private void onReceiveMessage(MethodCall call,Result result) {
+    Log.d("tag","step 1 call.arguments="+call.arguments);
+    Map<String,String>  map= (Map<String, String>) call.arguments;
+    Log.d("tag","step 2 call.arguments="+call.arguments);
+    PushData data=PushData.getChatNotification(map);
+    Log.d("tag","step 3 call.arguments="+call.arguments);
+    ZopimChatApi.onMessageReceived(data);
+    Log.d("tag","step 4 call.arguments="+call.arguments);
+    result.success("");
+  }
+
 
   private void closeChatWidget(Result result) {
-    Log.d("closeChatWidget","closeChatWidget");
     ChatWidgetService.stopService(activity);
     result.success("");
   }
 
 
   private void handleInit(MethodCall call, Result result) {
+    Logger.setLoggable(true);
+    PreChatForm defaultPreChat = new PreChatForm.Builder()
+            .name(PreChatForm.Field.OPTIONAL)
+            .email(PreChatForm.Field.OPTIONAL)
+            .phoneNumber(PreChatForm.Field.OPTIONAL)
+            .department(PreChatForm.Field.OPTIONAL)
+            .message(PreChatForm.Field.OPTIONAL)
+            .build();
     ZopimChat.DefaultConfig zopimConfig = ZopimChat.init((String) call.argument("accountKey"));
     if (call.hasArgument("department")) {
       zopimConfig.department((String) call.argument("department"));
@@ -110,6 +139,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
     if (call.hasArgument("appName")) {
       zopimConfig.visitorPathOne((String) call.argument("appName"));
     }
+    zopimConfig.preChatForm(defaultPreChat);
     result.success(true);
   }
 
@@ -162,6 +192,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler {
     ZopimChatApi.getDataSource().addChatLogObserver(mChannelLogObserver);
     if (activity != null) {
       Intent intent = new Intent(activity, ZopimChatActivity.class);
+      intent.setAction("zopim.action.RESUME_CHAT");
       activity.startActivity(intent);
     }
 
